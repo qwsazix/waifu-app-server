@@ -3,17 +3,17 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
 const login = async (logInfo) => {
-    const { email, password } = logInfo;
+    const { login, password } = logInfo;
 
-    if (!email || !password) throw {status: 400, message: 'Email and password required'};
+    if (!login || !password) throw {status: 400, message: 'Email and password required'};
 
-    const existingUser = await User.findOne({ email });
+    const existingUser = await User.findOne({ login });
 
     if (!existingUser) throw {status: 401, message: 'Invalid email or password'};
 
     const validPassword = await bcrypt.compare(password, existingUser.password);
 
-    if (!validPassword) throw {status: 401, message:'Invalid email or password'};
+    if (!validPassword) throw {status: 401, message:'Invalid login or password'};
 
     const payload = {
         id: existingUser._id,
