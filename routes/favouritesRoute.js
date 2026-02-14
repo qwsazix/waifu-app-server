@@ -34,7 +34,7 @@ router.get("/getFavourite", authMiddleware, async (req, res) => {
 
     const existingUser = await UserFavourite.findOne({ userId });
 
-    if (!existingUser) res.status(200);
+    if (!existingUser || existingUser.favourites.length === 0) res.status(200).json([]);
 
     res.status(200).json(existingUser.favourites);
 })
