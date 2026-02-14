@@ -23,7 +23,7 @@ const login = async (logInfo) => {
     const payload = {
         id: existingUser._id,
         username: existingUser.username,
-        email
+        email: existingUser.email
     }
     const token = jwt.sign(payload, process.env.JWT_SECRET, {
         expiresIn: '7d'
