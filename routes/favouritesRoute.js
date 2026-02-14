@@ -18,7 +18,7 @@ router.post("/addFavourite", authMiddleware, async (req, res) => {
         { upsert: true }
     );
 
-    if (result.modifiedCount === 0) {
+    if (result.modifiedCount === 0 && !result.upsertedId) {
         return res.status(409).json({
             message: "Image alreaddy in favourites"
         })
