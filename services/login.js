@@ -7,9 +7,14 @@ const login = async (logInfo) => {
 
     if (!login || !password) throw {status: 400, message: 'Email and password required'};
 
-    const existingUser = await User.findOne({ login });
+    const existingUser = await User.findOne({
+        $or: [
+            { username: login },
+            { email: login }
+        ]
+    });
 
-    if (!existingUser) throw {status: 401, message: 'Invalid email or password'};
+    if (!existingUser) throw {status: 401, message: 'Invalid login or password'};
 
     const validPassword = await bcrypt.compare(password, existingUser.password);
 
