@@ -1,0 +1,21 @@
+{
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "cors": "^2.8.5",
+    "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.3",
+    "mongoose": "^9.1.4"
+  },
+  "name": "server",
+  "version": "1.0.0",
+  "description": "Server for my waifu.im using application",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js"
+  },
+  "keywords": [
+    "waifu.im"
+  ],
+  "author": "qwsazix",
+  "license": "ISC"
+}
