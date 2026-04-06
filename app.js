@@ -27,6 +27,10 @@ app.use('/token', tokenRoute);
 const addToFavourite = require('./routes/favouritesRoute');
 app.use('/fav', addToFavourite);
 
+//pinging server (for render)
+app.get('/ping', (req,res) => {
+    res.status(200).send('pong');
+})
 
 const PORT = process.env.PORT;
 
