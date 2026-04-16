@@ -4,12 +4,14 @@ const userFavourite = new mongoose.Schema({
     userId: {
         type: String,
         required: true,
-        uniquie: true
+        unique: true
     },
-    favourites: {
-        type: [String],
-        default: [],
-    }
+    favourites: [
+        {
+            url: {type: String, required: true},
+            source: {type: String}
+        }
+    ]
 })
 
 const UserFavourite = mongoose.model('UserFavourite', userFavourite);

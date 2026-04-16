@@ -5,16 +5,17 @@ const UserFavourite = require('../models/userFavourite');
 const authMiddleware = require('../middleware/tokenMiddleware');
 
 router.post("/addFavourite", authMiddleware, async (req, res) => {
+    try {
     const userId = req.user.id;
     const { img } = req.body;
 
-    if (!img) {
+    if (!img || !img.url) {
         return res.status(400).json({ message: 'Image is required' });
     }
 
     const result = await UserFavourite.updateOne(
         { userId },
-        { $addToSet: { favourites: img } },
+        { $addToSet: { favourites: { url: img.url, source: img.source || '' } } },
         { upsert: true }
     );
 
@@ -27,6 +28,10 @@ router.post("/addFavourite", authMiddleware, async (req, res) => {
     res.status(200).json({
         message: "Image added to favourites"
     });
+
+    } catch (err) {
+        res.status(500).json({message: 'Internal server error', error: err});
+    }
 })
 
 router.get("/getFavourite", authMiddleware, async (req, res) => {
@@ -34,9 +39,9 @@ router.get("/getFavourite", authMiddleware, async (req, res) => {
 
     const existingUser = await UserFavourite.findOne({ userId });
 
-    if (!existingUser || existingUser.favourites.length === 0) res.status(200).json([]);
+    if (!existingUser || existingUser.favourites.length === 0) return res.status(200).json([]);
 
-    res.status(200).json(existingUser.favourites);
+    return res.status(200).json(existingUser.favourites);
 })
 
 router.post("/removeFavourite", authMiddleware, async (req, res) => {
@@ -45,7 +50,7 @@ router.post("/removeFavourite", authMiddleware, async (req, res) => {
 
     const result = await UserFavourite.updateOne(
         { userId },
-        { $pull: { favourites: img } }
+        { $pull: { favourites: {url: img.url} } }
     )
 
     if (result.modifiedCount === 0) {
