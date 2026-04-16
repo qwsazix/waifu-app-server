@@ -6,42 +6,51 @@ const authMiddleware = require('../middleware/tokenMiddleware');
 
 router.post("/addFavourite", authMiddleware, async (req, res) => {
     try {
-    const userId = req.user.id;
-    const { img } = req.body;
+        const userId = req.user.id;
+        const { img } = req.body;
 
-    if (!img || !img.url) {
-        return res.status(400).json({ message: 'Image is required' });
-    }
+        if (!img || !img.url) {
+            return res.status(400).json({ message: 'Image is required' });
+        }
 
-    const result = await UserFavourite.updateOne(
-        { userId },
-        { $addToSet: { favourites: { url: img.url, source: img.source || '' } } },
-        { upsert: true }
-    );
+        const result = await UserFavourite.updateOne(
+            { userId },
+            { $addToSet: { favourites: { url: img.url, source: img.source || '' } } },
+            { upsert: true }
+        );
 
-    if (result.modifiedCount === 0 && !result.upsertedId) {
-        return res.status(409).json({
-            message: "Image alreaddy in favourites"
-        })
-    }
+        if (result.modifiedCount === 0 && !result.upsertedId) {
+            return res.status(409).json({
+                message: "Image alreaddy in favourites"
+            })
+        }
 
-    res.status(200).json({
-        message: "Image added to favourites"
-    });
+        res.status(200).json({
+            message: "Image added to favourites"
+        });
 
     } catch (err) {
-        res.status(500).json({message: 'Internal server error', error: err});
+        res.status(500).json({ message: 'Internal server error', error: err });
     }
 })
 
 router.get("/getFavourite", authMiddleware, async (req, res) => {
-    const userId = req.user.id;
+    try {
+        const userId = req.user.id;
 
-    const existingUser = await UserFavourite.findOne({ userId });
+        const existingUser = await UserFavourite.findOne({ userId });
 
-    if (!existingUser || existingUser.favourites.length === 0) return res.status(200).json([]);
+        if (!existingUser || existingUser.favourites.length === 0) return res.status(200).json([]);
 
-    return res.status(200).json(existingUser.favourites);
+        const normalizedFavourites = existingUser.favourites.map(fav => {
+            return typeof fav === 'string' ? { url: fav, source: '' } : fav;
+        });
+
+
+        return res.status(200).json(normalizedFavourites);
+    } catch (err) {
+        res.status(500).json({ message: 'Internal server error', error: err });
+    }
 })
 
 router.post("/removeFavourite", authMiddleware, async (req, res) => {
@@ -50,7 +59,7 @@ router.post("/removeFavourite", authMiddleware, async (req, res) => {
 
     const result = await UserFavourite.updateOne(
         { userId },
-        { $pull: { favourites: {url: img.url} } }
+        { $pull: { favourites: { url: img.url } } }
     )
 
     if (result.modifiedCount === 0) {
