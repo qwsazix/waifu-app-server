@@ -14,15 +14,28 @@ router.post("/addFavourite", authMiddleware, async (req, res) => {
         }
 
         const result = await UserFavourite.updateOne(
-            { userId },
-            { $addToSet: { favourites: { url: img.url, source: img.source || '' } } },
-            { upsert: true }
+            {
+                userId,
+                "favourites.url": { $ne: img.url }
+            },
+            { $push: { favourites: { url: img.url, source: img.source || '' } } },
+            { upsert: false }
         );
 
-        if (result.modifiedCount === 0 && !result.upsertedId) {
-            return res.status(409).json({
-                message: "Image alreaddy in favourites"
-            })
+        if (result.modifiedCount === 0) {
+
+            const userExists = await UserFavourite.exists({ userId });
+
+            if (!userExists) {
+                await UserFavourite.create({
+                    userId,
+                    favourites: [{ url: img.url, source: img.source || '' }]
+                })
+            } else {
+                return res.status(409).json({
+                    message: "Image alreaddy in favourites"
+                })
+            }
         }
 
         res.status(200).json({
@@ -30,7 +43,8 @@ router.post("/addFavourite", authMiddleware, async (req, res) => {
         });
 
     } catch (err) {
-        res.status(500).json({ message: 'Internal server error', error: err });
+        console.error(err)
+        res.status(500).json({ message: 'Internal server error' });
     }
 })
 
@@ -45,7 +59,6 @@ router.get("/getFavourite", authMiddleware, async (req, res) => {
         const normalizedFavourites = existingUser.favourites.map(fav => {
             return typeof fav === 'string' ? { url: fav, source: '' } : fav;
         });
-
 
         return res.status(200).json(normalizedFavourites);
     } catch (err) {

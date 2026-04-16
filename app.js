@@ -1,5 +1,7 @@
 const required = ["JWT_SECRET", "MONGO_URI", "PORT", "ADMIN_EM", "ADMIN_PW"];
 
+require('dotenv').config();
+
 for (const key of required) {
     if (!process.env[key]) {
         console.error(`Missing env variable: ${key}`);
